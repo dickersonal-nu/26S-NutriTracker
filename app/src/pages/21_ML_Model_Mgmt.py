@@ -13,13 +13,13 @@ st.title('App Administration Page')
 st.write('\n\n')
 st.write('## Model 1 Maintenance')
 
-st.button("Train Model 01", 
-            type = 'primary', 
-            use_container_width=True)
+if st.button("Train Model 01", type='primary', use_container_width=True):
+    # TODO: wire this to a POST /train route on the API that triggers retraining
+    st.info("Training route not yet implemented.")
 
-st.button('Test Model 01', 
-            type = 'primary', 
-            use_container_width=True)
+if st.button('Test Model 01', type='primary', use_container_width=True):
+    # TODO: wire this to a GET /test route on the API
+    st.info("Testing route not yet implemented.")
 
 if st.button('Model 1 - get predicted value for 10, 25', 
              type = 'primary',
