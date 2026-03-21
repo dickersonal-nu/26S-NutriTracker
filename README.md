@@ -1,6 +1,6 @@
-# Fall 2025 CS 3200 Project Template
+# Spring 2026 CS 3200 Project Template
 
-This is a template repo for Dr. Fontenot's Fall 2025 CS 3200 Course Project. 
+This is a template repo for Dr. Fontenot's Spring 2026 CS 3200 Course Project.
 
 It includes most of the infrastructure setup (containers), sample databases, and example UI pages. Explore it fully and ask questions!
 
@@ -17,10 +17,11 @@ It includes most of the infrastructure setup (containers), sample databases, and
      ```bash
      cd api
      pip install -r requirements.txt
-     cd ../app
+     cd ../app/src
      pip install -r requirements.txt
      ```
-     Note that the `..` means go to the parent folder of the folder you're currently in (which is `api/` after the first command)
+     Note that the `..` means go to the parent folder of the folder you're currently in (which is `api/` after the first command).
+     > **Why install locally if everything runs in Docker?** Installing the packages locally lets your IDE (VSCode) provide autocompletion, linting, and error highlighting as you write code. The app itself always runs inside the Docker containers — the local install is just for editor support.
 - VSCode with the Python Plugin installed
   - You may use some other Python/code editor.  However, Course staff will only support VS Code. 
 
@@ -32,6 +33,7 @@ It includes most of the infrastructure setup (containers), sample databases, and
   - `./api` - the Flask REST API
   - `./database-files` - SQL scripts to initialize the MySQL database
   - `./datasets` - folder for storing datasets
+  - `./ml-src` - folder for ML model development (Jupyter notebooks, training scripts)
 
 - The repo also contains a `docker-compose.yaml` file that is used to set up the Docker containers for the front end app, the REST API, and MySQL database. 
 
@@ -46,9 +48,9 @@ If you are not familiar with web app development, this code base might be confus
 
 ## Setting Up the Repos
 <details>
-<summary>Setting Up a Personal Testing Repo (Optional)</summary>
+<summary>Setting Up a Personal Sandbox Repo (Optional)</summary>
 
-### Setting Up A Personal Sandbox Repo (This is Optional)
+### Setting Up a Personal Sandbox Repo (Optional)
 
 **Before you start**: You need to have a GitHub account and a terminal-based git client or GUI Git client such as GitHub Desktop or the Git plugin for VSCode.
 
@@ -90,8 +92,8 @@ If you are not familiar with web app development, this code base might be confus
 ## Important Tips
 
 1. In general, any changes you make to the api code base (REST API) or the Streamlit app code should be *hot reloaded* when the files are saved.  This means that the changes should be immediately available.  
-   1. Don't forget to hit click the **Always Rerun** button in the browser tab of the Streamlit app for it to reload with changes. 
-   1. Sometimes, a bug in the code will shut the containers down.  If this is the case, try and fix the bug in the code.  Then you can restart the `web-app` container in Docker Desktop or restart all the containers with `docker compose restart` (no *-d* flag). 
+   1. Don't forget to click the **Always Rerun** button in the browser tab of the Streamlit app for it to reload with changes.
+   1. Sometimes, a bug in the code will shut the containers down.  If this is the case, try and fix the bug in the code.  Then you can restart the `app` container in Docker Desktop or restart all the containers with `docker compose restart` (no *-d* flag).
 1. The MySQL Container is different. 
    1. When the MySQL container is ***created*** the first time, it will execute any `.sql` files in the `./database-files` folder. **Important:** it will execute them in alphabetical order.  
    1. The MySQL Container's log files are your friend! Remember, you can access them in Docker Desktop by going to the MySQL Container, and clicking on the `Logs` tab.  If there are errors in your .sql files as it is trying to run them, there will be a message in the logs. You can search 🔍 for `Error` to find them more quickly. 
@@ -110,9 +112,9 @@ Wrapping your head around this will take a little time and exploration of this c
 ### Getting Started with the RBAC
 
 1. We need to turn off the standard panel of links on the left side of the Streamlit app. This is done through the `app/src/.streamlit/config.toml` file. So check that out. We are turning it off so we can control directly what links are shown.
-1. Then I created a new python module in `app/src/modules/nav.py`. When you look at the file, you will se that there are functions for basically each page of the application. The `st.sidebar.page_link(...)` adds a single link to the sidebar. We have a separate function for each page so that we can organize the links/pages by role.
+1. Then I created a new python module in `app/src/modules/nav.py`. When you look at the file, you will see that there are functions for basically each page of the application. The `st.sidebar.page_link(...)` adds a single link to the sidebar. We have a separate function for each page so that we can organize the links/pages by role.
 1. Next, check out the `app/src/Home.py` file. Notice that there are 3 buttons added to the page and when one is clicked, it redirects via `st.switch_page(...)` to that Roles Home page in `app/src/pages`. But before the redirect, I set a few different variables in the Streamlit `session_state` object to track role, first name of the user, and that the user is now authenticated.
-1. Notice near the top of `app/src/Home.py` and all other pages, there is a call to `SideBarLinks(...)` from the `app/src/nav.py` module. This is the function that will use the role set in `session_state` to determine what links to show the user in the sidebar.
+1. Notice near the top of `app/src/Home.py` and all other pages, there is a call to `SideBarLinks(...)` from the `app/src/modules/nav.py` module. This is the function that will use the role set in `session_state` to determine what links to show the user in the sidebar.
 1. The pages are organized by Role. Pages that start with a `0` are related to the _Political Strategist_ role. Pages that start with a `1` are related to the _USAID worker_ role. And, pages that start with a `2` are related to The _System Administrator_ role.
 
 
@@ -129,5 +131,5 @@ _Note_: This project only contains the infrastructure for a hypothetical ML mode
    - You may or may not need to include data cleaning, though.
 1. Review the `api/backend/ml_models` module. In this folder,
    - We've put a sample (read _fake_) ML model in the `model01.py` file. The `predict` function will be called by the Flask REST API to perform '_real-time_' prediction based on model parameter values that are stored in the database. **Important**: you would never want to hard code the model parameter weights directly in the prediction function.
-1. The prediction route for the REST API is in `api/backend/customers/customer_routes.py`. Basically, it accepts two URL parameters and passes them to the `prediction` function in the `ml_models` module. The `prediction` route/function packages up the value(s) it receives from the model's `predict` function and send its back to Streamlit as JSON.
-1. Back in streamlit, check out `app/src/pages/11_Prediction.py`. Here, I create two numeric input fields. When the button is pressed, it makes a request to the REST API URL `/c/prediction/.../...` function and passes the values from the two inputs as URL parameters. It gets back the results from the route and displays them. Nothing fancy here.
+1. The prediction route for the REST API is in `api/backend/simple/simple_routes.py`. Basically, it accepts two URL parameters and passes them to the `prediction` function in the `ml_models` module. The `prediction` route/function packages up the value(s) it receives from the model's `predict` function and sends it back to Streamlit as JSON.
+1. Back in Streamlit, check out `app/src/pages/11_Prediction.py`. Here, two numeric input fields are created. When the button is pressed, it makes a request to the REST API at `/prediction/{var_01}/{var_02}` and passes the values from the two inputs as URL path parameters. It gets back the results from the route and displays them.
