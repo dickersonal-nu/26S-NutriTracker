@@ -178,3 +178,55 @@ def create_report():
     except Error as e:
         current_app.logger.error(f'/analytics/reports failed: {e}')
         return jsonify({'error': str(e)}), 500
+    
+# Immanuel 3.2: PUT to update an existing export config
+@analytics.route('/exports/<int:config_id>', methods=['PUT'])
+def update_export_config(config_id):
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        data = request.get_json()
+
+        # build UPDATE dynamically — only touch fields the analyst actually sent
+        updates = []
+        params = []
+
+        if data.get('name') is not None:
+            updates.append('name = %s')
+            params.append(data.get('name'))
+
+        if data.get('format') is not None:
+            updates.append('format = %s')
+            params.append(data.get('format'))
+
+        if data.get('field_selections') is not None:
+            updates.append('field_selections = %s')
+            params.append(json.dumps(data.get('field_selections')))
+
+        if data.get('filter_params') is not None:
+            updates.append('filter_params = %s')
+            params.append(json.dumps(data.get('filter_params')))
+
+        if data.get('is_scheduled') is not None:
+            updates.append('is_scheduled = %s')
+            params.append(data.get('is_scheduled'))
+
+        if data.get('cron_expression') is not None:
+            updates.append('cron_expression = %s')
+            params.append(data.get('cron_expression'))
+
+        # nothing to update? bail early
+        if not updates:
+            return jsonify({'error': 'At least one field required to update'}), 400
+
+        # tack config_id onto the end of params for the WHERE clause
+        params.append(config_id)
+
+        query = f"UPDATE export_configs SET {', '.join(updates)} WHERE config_id = %s"
+        cursor.execute(query, params)
+        get_db().commit()
+
+        return jsonify({'message': f'Export config {config_id} updated'}), 200
+
+    except Error as e:
+        current_app.logger.error(f'/analytics/exports/{config_id} PUT failed: {e}')
+        return jsonify({'error': str(e)}), 500
