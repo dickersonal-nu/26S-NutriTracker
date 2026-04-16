@@ -96,3 +96,49 @@ def trends():
         # logs for debugging, return 500 so frontend sees it - stole from jasmine
         current_app.logger.error(f'/analytics/trends failed: {e}')
         return jsonify({'error': str(e)}), 500
+    
+# Immanuel story 3.4: compare avg nutrient intake between athletes vs non-athletes
+@analytics.route('/compare', methods=['GET'])
+def compare():
+    # read query params — hall and student_type are optional
+    start_date = request.args.get('start', '2025-03-29')
+    end_date = request.args.get('end', '2025-04-04')
+    nutrient = request.args.get('nutrient')  # None means "all nutrients"
+
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        # base query: avg intake per nutrient, grouped by athlete vs non-athlete
+        query = '''
+            SELECT case when d.athletic_team is not null then 'Athlete'
+                else 'Non-Athlete' end as student_group,
+                n.name as nutrient, n.unit,
+                round(avg(min_t.amount * mli.servings), 2) as avg_intake_per_log,
+                count(distinct ml.user_id) as num_students
+            FROM meal_logs ml
+            JOIN meal_log_items mli on ml.log_id = mli.log_id
+            JOIN menu_items mi on mli.item_id = mi.item_id
+            JOIN menu_item_nutrients min_t on mi.item_id = min_t.item_id
+            JOIN nutrients n on min_t.nutrient_id = n.nutrient_id
+            JOIN users u on ml.user_id = u.user_id
+            JOIN demographics d on u.demographic_id = d.demographic_id
+            WHERE ml.log_date BETWEEN %s AND %s
+        '''
+        params = [start_date, end_date]
+
+        # add on optional filters only if user passed them
+        if nutrient:
+            query += ' AND n.name = %s'
+            params.append(nutrient)
+
+        query += '''
+            GROUP BY student_group, n.name, n.unit
+            ORDER BY n.name, student_group;
+        '''
+
+        cursor.execute(query, params)
+        return jsonify(cursor.fetchall()), 200
+
+    except Error as e:
+        # logs for debugging, return 500 so frontend sees it - stole from jasmine
+        current_app.logger.error(f'/analytics/compare failed: {e}')
+        return jsonify({'error': str(e)}), 500
