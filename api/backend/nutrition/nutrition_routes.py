@@ -5,7 +5,7 @@ from mysql.connector import Error
 nutrition = Blueprint('nutrition', __name__)
 
 
-@nutrition.route('/nutrition/daily/<int:user_id>', methods=['GET'])
+@nutrition.route('/daily/<int:user_id>', methods=['GET'])
 def get_daily_nutrition(user_id):
     log_date = request.args.get('date', '2025-04-04')
     cursor = get_db().cursor(dictionary=True)
@@ -34,7 +34,7 @@ def get_daily_nutrition(user_id):
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/menu', methods=['GET'])
+@nutrition.route('/menu', methods=['GET'])
 def get_menu_nutrition():
     available_date = request.args.get('date', '2025-04-04')
     cursor = get_db().cursor(dictionary=True)
@@ -58,7 +58,7 @@ def get_menu_nutrition():
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/log', methods=['POST'])
+@nutrition.route('/log', methods=['POST'])
 def log_meal():
     cursor = get_db().cursor(dictionary=True)
     try:
@@ -88,7 +88,7 @@ def log_meal():
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/history/<int:user_id>', methods=['GET'])
+@nutrition.route('/history/<int:user_id>', methods=['GET'])
 def get_weekly_history(user_id):
     start  = request.args.get('start', '2025-03-29')
     end    = request.args.get('end',   '2025-04-04')
@@ -115,7 +115,7 @@ def get_weekly_history(user_id):
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/goals/<int:user_id>', methods=['GET'])
+@nutrition.route('/goals/<int:user_id>', methods=['GET'])
 def get_goal_status(user_id):
     log_date = request.args.get('date', '2025-04-04')
     cursor   = get_db().cursor(dictionary=True)
@@ -150,7 +150,7 @@ def get_goal_status(user_id):
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/alerts/<int:user_id>', methods=['GET'])
+@nutrition.route('/alerts/<int:user_id>', methods=['GET'])
 def get_alerts(user_id):
     cursor = get_db().cursor(dictionary=True)
     try:
@@ -169,7 +169,7 @@ def get_alerts(user_id):
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/log/<int:log_id>', methods=['PUT'])
+@nutrition.route('/log/<int:log_id>', methods=['PUT'])
 def update_meal_log(log_id):
     cursor = get_db().cursor(dictionary=True)
     try:
@@ -202,7 +202,7 @@ def update_meal_log(log_id):
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/goal/<int:goal_id>', methods=['PUT'])
+@nutrition.route('/goal/<int:goal_id>', methods=['PUT'])
 def update_nutrition_goal(goal_id):
     cursor = get_db().cursor(dictionary=True)
     try:
@@ -220,7 +220,7 @@ def update_nutrition_goal(goal_id):
         return jsonify({'error': str(e)}), 500
 
 
-@nutrition.route('/nutrition/log/<int:log_id>', methods=['DELETE'])
+@nutrition.route('/log/<int:log_id>', methods=['DELETE'])
 def delete_meal_log(log_id):
     cursor = get_db().cursor(dictionary=True)
     try:
