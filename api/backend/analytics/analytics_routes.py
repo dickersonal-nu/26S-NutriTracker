@@ -60,7 +60,7 @@ def filter_nutrition_data():
 # Immanuel story 3.3: nutrient totals per day over a date range
 @analytics.route('/trends', methods=['GET'])
 def trends():
-    # read query params — hall and student_type are optional
+    # grab params, nutrient filter optional
     start_date = request.args.get('start', '2025-03-29')
     end_date = request.args.get('end', '2025-04-04')
     nutrient = request.args.get('nutrient')  # None means "all nutrients"
@@ -102,7 +102,7 @@ def trends():
 # Immanuel story 3.4: compare avg nutrient intake between athletes vs non-athletes
 @analytics.route('/compare', methods=['GET'])
 def compare():
-    # read query params — hall and student_type are optional
+    # grab params, nutrient filter optional
     start_date = request.args.get('start', '2025-03-29')
     end_date = request.args.get('end', '2025-04-04')
     nutrient = request.args.get('nutrient')  # None means "all nutrients"
@@ -157,7 +157,7 @@ def create_report():
         report_type = data.get('report_type')
         filter_params = data.get('filter_params', {})  # default to empty dict
 
-        # bail early if required fields are missing
+        # end early if required fields are missing
         if not all([created_by, title, report_type]):
             return jsonify({'error': 'created_by, title, and report_type are required'}), 400
 
@@ -186,7 +186,7 @@ def update_export_config(config_id):
     try:
         data = request.get_json()
 
-        # build UPDATE dynamically — only touch fields the analyst actually sent
+        # build UPDATE dynamically ... only touch fields the analyst actually sent
         updates = []
         params = []
 
@@ -214,11 +214,11 @@ def update_export_config(config_id):
             updates.append('cron_expression = %s')
             params.append(data.get('cron_expression'))
 
-        # nothing to update? bail early
+        # nothing to update? end early
         if not updates:
             return jsonify({'error': 'At least one field required to update'}), 400
 
-        # tack config_id onto the end of params for the WHERE clause
+        # put config_id onto the end of params for the WHERE clause
         params.append(config_id)
 
         query = f"UPDATE export_configs SET {', '.join(updates)} WHERE config_id = %s"
@@ -229,4 +229,18 @@ def update_export_config(config_id):
 
     except Error as e:
         current_app.logger.error(f'/analytics/exports/{config_id} PUT failed: {e}')
+        return jsonify({'error': str(e)}), 500
+    
+# Immanuel 3.2: DELETE an export config by id
+@analytics.route('/exports/<int:config_id>', methods=['DELETE'])
+def delete_export_config(config_id):
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        # %s is a parameterized placeholder. the driver safely substitutes config_id to prevent SQL injection (so somebody cant delete my whole row)
+        cursor.execute('DELETE FROM export_configs WHERE config_id = %s', (config_id,))
+        get_db().commit()
+        return jsonify({'message': f'Export config {config_id} deleted'}), 200
+
+    except Error as e:
+        current_app.logger.error(f'/analytics/exports/{config_id} DELETE failed: {e}')
         return jsonify({'error': str(e)}), 500
