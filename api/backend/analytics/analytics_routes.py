@@ -6,6 +6,7 @@ import json
 analytics = Blueprint('analytics', __name__)
 
 #comments placed to learn, inspired format from Jasmine
+# Process: look how Jasmine approached for consistency, fill in own templates. Paste SQL from google doc for query
 
 # Immanuel story 3.1: filter nutrition data by hall, date range, student type
 @analytics.route('/filter', methods=['GET'])
@@ -243,4 +244,72 @@ def delete_export_config(config_id):
 
     except Error as e:
         current_app.logger.error(f'/analytics/exports/{config_id} DELETE failed: {e}')
+        return jsonify({'error': str(e)}), 500
+
+# Immanuel 3.6: flag users eating way more or less than avg for a nutrient
+@analytics.route('/outliers', methods=['GET'])
+def outliers():
+    # grab params, nutrient filter optional
+    start_date = request.args.get('start', '2025-03-29')
+    end_date = request.args.get('end', '2025-04-04')
+    nutrient = request.args.get('nutrient')
+
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        # inner subquery gets population avg + stddev per nutrient
+        # outer query flags anyone 2+ std devs above or below
+        query = '''
+            SELECT u.first_name, u.last_name, ml.log_date,
+                   n.name as nutrient, n.unit,
+                   round(sum(min_t.amount * mli.servings), 2) as daily_total,
+                   round(stats.avg_val, 2) as population_avg,
+                   round(stats.std_val, 2) as population_stddev,
+                   case
+                     when sum(min_t.amount * mli.servings) > stats.avg_val + 2 * stats.std_val then 'HIGH OUTLIER'
+                     when sum(min_t.amount * mli.servings) < stats.avg_val - 2 * stats.std_val then 'LOW OUTLIER'
+                   end as outlier_flag
+            FROM meal_logs ml
+            JOIN meal_log_items mli on ml.log_id = mli.log_id
+            JOIN menu_items mi on mli.item_id = mi.item_id
+            JOIN menu_item_nutrients min_t on mi.item_id = min_t.item_id
+            JOIN nutrients n on min_t.nutrient_id = n.nutrient_id
+            JOIN users u on ml.user_id = u.user_id
+            JOIN (
+                SELECT n2.nutrient_id,
+                       avg(sub.daily_total) as avg_val,
+                       stddev(sub.daily_total) as std_val
+                FROM (
+                    SELECT ml2.user_id, ml2.log_date, min2.nutrient_id,
+                           sum(min2.amount * mli2.servings) as daily_total
+                    FROM meal_logs ml2
+                    JOIN meal_log_items mli2 on ml2.log_id = mli2.log_id
+                    JOIN menu_items mi2 on mli2.item_id = mi2.item_id
+                    JOIN menu_item_nutrients min2 on mi2.item_id = min2.item_id
+                    GROUP BY ml2.user_id, ml2.log_date, min2.nutrient_id
+                ) sub
+                JOIN nutrients n2 on sub.nutrient_id = n2.nutrient_id
+                GROUP BY n2.nutrient_id
+            ) stats on n.nutrient_id = stats.nutrient_id
+            WHERE ml.log_date BETWEEN %s AND %s
+        '''
+        params = [start_date, end_date]
+
+        # tack on nutrient filter if the analyst sent one
+        if nutrient:
+            query += ' AND n.name = %s'
+            params.append(nutrient)
+
+        query += '''
+            GROUP BY u.user_id, u.first_name, u.last_name, ml.log_date,
+                     n.nutrient_id, n.name, n.unit, stats.avg_val, stats.std_val
+            HAVING sum(min_t.amount * mli.servings) > stats.avg_val + 2 * stats.std_val
+                OR sum(min_t.amount * mli.servings) < stats.avg_val - 2 * stats.std_val
+            ORDER BY outlier_flag desc, ml.log_date
+        '''
+
+        cursor.execute(query, params)
+        return jsonify(cursor.fetchall()), 200
+
+    except Error as e:
+        current_app.logger.error(f'/analytics/outliers failed: {e}')
         return jsonify({'error': str(e)}), 500
