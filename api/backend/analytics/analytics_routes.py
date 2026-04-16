@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify, request, current_app
 from backend.db_connection import get_db
 from mysql.connector import Error
+import json
 
 analytics = Blueprint('analytics', __name__)
 
+#comments placed to learn, inspired format from Jasmine
 
 # Immanuel story 3.1: filter nutrition data by hall, date range, student type
 @analytics.route('/filter', methods=['GET'])
@@ -141,4 +143,38 @@ def compare():
     except Error as e:
         # logs for debugging, return 500 so frontend sees it - stole from jasmine
         current_app.logger.error(f'/analytics/compare failed: {e}')
+        return jsonify({'error': str(e)}), 500
+    
+# Immanuel 3.5: POST to queue an auto-generated summary report
+@analytics.route('/reports', methods=['POST'])
+def create_report():
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        # pull fields out of the request body
+        data = request.get_json()
+        created_by = data.get('created_by')
+        title = data.get('title')
+        report_type = data.get('report_type')
+        filter_params = data.get('filter_params', {})  # default to empty dict
+
+        # bail early if required fields are missing
+        if not all([created_by, title, report_type]):
+            return jsonify({'error': 'created_by, title, and report_type are required'}), 400
+
+        # filter_params is a JSON column, so serialize the dict to a string
+        cursor.execute(
+            '''INSERT INTO reports
+               (created_by, title, report_type, filter_params, status)
+               VALUES (%s, %s, %s, %s, %s)''',
+            (created_by, title, report_type, json.dumps(filter_params), 'pending')
+        )
+        get_db().commit()
+
+        return jsonify({
+            'message': 'Report queued',
+            'report_id': cursor.lastrowid
+        }), 201
+
+    except Error as e:
+        current_app.logger.error(f'/analytics/reports failed: {e}')
         return jsonify({'error': str(e)}), 500
