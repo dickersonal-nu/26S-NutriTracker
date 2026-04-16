@@ -313,3 +313,15 @@ def outliers():
     except Error as e:
         current_app.logger.error(f'/analytics/outliers failed: {e}')
         return jsonify({'error': str(e)}), 500
+    
+# Immanuel 3.2: GET all export configs for a user... optional, added for nicer page
+@analytics.route('/exports/user/<int:user_id>', methods=['GET'])
+def get_export_configs(user_id):
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT * FROM export_configs WHERE user_id = %s', (user_id,))
+        return jsonify(cursor.fetchall()), 200
+
+    except Error as e:
+        current_app.logger.error(f'/analytics/exports/user/{user_id} failed: {e}')
+        return jsonify({'error': str(e)}), 500
