@@ -7,6 +7,7 @@ from backend.db_connection import init_app as init_db
 from backend.simple.simple_routes import simple_routes
 from backend.ngos.ngo_routes import ngos
 from backend.nutrition.nutrition_routes import nutrition
+from backend.analytics.analytics_routes import analytics
 
 
 def create_app():
@@ -39,4 +40,5 @@ def create_app():
     app.register_blueprint(simple_routes)
     app.register_blueprint(ngos, url_prefix="/ngo")
     app.register_blueprint(nutrition, url_prefix="/nutrition")
+    app.register_blueprint(analytics, url_prefix="/analytics")
     return app
