@@ -2,9 +2,9 @@
 
 <h1>NutriTracker</h1>
 
-**[WRITE: one-line tagline for the app]**
+**Assisting Northeastern's diet, one step at a time.**
 
-[WRITE: one sentence describing what the app does]
+Track your dietary needs on campus!
 
 <br />
 
@@ -18,22 +18,22 @@
 
 ## The Problem
 
-[WRITE: 2-3 sentences about why campus nutrition tracking sucks right now. What's broken? Why do students struggle?]
+Starting a diet is difficult, especially with the poorly designed system DineOnCampus provides. Missing items on menus, inaccurate data, and overall student business makes it hard to stay healthy.
 
 **NutriTracker fixes that.**
 
-[WRITE: 2-3 sentences about what NutriTracker does differently]
+NutriTracker stores data on food and tracks your daily intake with minimalistic design. Visualize your diet and needs instantly with our program!
 
 ---
 
 ## Team AJJR
 
-| Name | Role | Persona |
-|---|---|---|
-| **Andrew Dickerson** | [FILL IN] | Jordan Carter (Performer) |
-| **Jasmine O'Brien** | [FILL IN] | Jason Batum (Student-Athlete) |
-| **Joshua Barrera** | [FILL IN] | Laura Smith (System Admin) |
-| **Ryan Sinha** | [FILL IN] | Immanuel Hoffborne (Data Analyst) |
+| Name | Persona |
+|---|---|
+| **Andrew Dickerson** | Jordan Carter (Performer) |
+| **Jasmine O'Brien** | Jason Batum (Student-Athlete) |
+| **Joshua Barrera** | Laura Smith (System Admin) |
+| **Ryan Sinha** | Immanuel Hoffborne (Data Analyst) |
 
 ---
 
@@ -46,8 +46,12 @@
 [WRITE: 3-4 bullet points — Jasmine's features]
 
 ### For Data Analysts (Immanuel)
-[WRITE: 3-4 bullet points — your features]
-
+- Filter and visualize nutritional information by dining hall, type of student, and date range.
+- Compare average intake between students and student athletes
+- Create, update, and delete data export configurations
+- Detect outliers for student diets
+- Generate and queue summary reports
+  
 ### For System Admins (Laura)
 [WRITE: 3-4 bullet points — Joshua's features]
 
@@ -99,7 +103,7 @@
    - Streamlit UI: [http://localhost:8501](http://localhost:8501)
    - Flask API: [http://localhost:4000](http://localhost:4000)
 
-5. **Log in** by selecting a persona from the home page — no password needed.
+5. **Log in** by selecting a persona from the home page
 
 ### Rebuilding the Database
 
@@ -117,8 +121,8 @@ docker compose up db -d
 26S-NutriTracker/
 ├── api/
 │   ├── backend/
-│   │   ├── analytics/          # [FILL IN: what's in here]
-│   │   ├── nutrition/          # [FILL IN: what's in here]
+│   │   ├── analytics/          # Immanuel's routes — filter, trends, compare, outliers, reports, exports
+│   │   ├── nutrition/          # Jason's routes — daily intake, meal logging, goals, alerts
 │   │   ├── db_connection/      # MySQL connection helper
 │   │   └── rest_entry.py       # Flask app factory + blueprint registration
 │   ├── .env                    # Database credentials (not committed)
@@ -126,12 +130,12 @@ docker compose up db -d
 ├── app/
 │   └── src/
 │       ├── Home.py             # Landing page with persona selection
-│       ├── pages/              # [FILL IN: how pages are organized]
+│       ├── pages/              # Streamlit pages organized by persona (20_Athlete_*, 30_Analyst_*)
 │       └── modules/nav.py      # Sidebar navigation
 ├── database-files/
 │   ├── 01_nutritracker_ddl.sql             # Schema
 │   ├── 02_nutritracker_data.sql            # Seed data
-│   └── 03_nutritracker_mock_analytics.sql  # [FILL IN: what's in here]
+│   └── 03_nutritracker_mock_analytics.sql  # Mock data for reports, exports, system metrics, audit logs
 └── docker-compose.yaml
 ```
 
@@ -145,6 +149,6 @@ docker compose up db -d
 
 <div align="center">
 
-[WRITE: one closing line]
+Created by Ryan Sinha, Joshua Barrera, Jasmine O'Brien, and Andrew Dickerson for CS3200 Spring '26
 
 </div>
