@@ -41,37 +41,41 @@ st.write('#### Hi! As which user would you like to log in?')
 # can click to MIMIC logging in as that mock user.
 
 if st.button('Act as Jordan Carter, a Performer',
-             type='primary',
-             use_container_width=True):
+            type='primary',
+            use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'performer'
     st.session_state['first_name'] = 'Jordan'
+    st.session_state['user_id'] = 1
     logger.info("Logging in as Performer Persona")
     st.switch_page('pages/10_Performer_Home.py')
 
 if st.button('Act as Jason Batum, a Student-Athlete',
-             type='primary',
-             use_container_width=True):
+            type='primary',
+            use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'athlete'
     st.session_state['first_name'] = 'Jason'
+    st.session_state['user_id'] = 2
     logger.info("Logging in as Athlete Persona")
     st.switch_page('pages/20_Athlete_Home.py')
 
 if st.button('Act as Immanuel Hoffborne, a Data Analyst',
-             type='primary',
-             use_container_width=True):
+            type='primary',
+            use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'analyst'
     st.session_state['first_name'] = 'Immanuel'
+    st.session_state['user_id'] = 3
     logger.info("Logging in as Analyst Persona")
     st.switch_page('pages/30_Analyst_Home.py')
 
 if st.button('Act as Laura Smith, a System Administrator',
-             type='primary',
-             use_container_width=True):
+            type='primary',
+            use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'administrator'
     st.session_state['first_name'] = 'Laura'
+    st.session_state['user_id'] = 4
     logger.info("Logging in as Administrator Persona")
     st.switch_page('pages/40_Admin_Home.py')
