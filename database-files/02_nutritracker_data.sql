@@ -106,7 +106,40 @@ INSERT INTO menu_items (hall_id, name, description, meal_period, available_date,
   (5, 'Buffalo Chicken Wrap',    'Crispy chicken, buffalo sauce, ranch, lettuce, cheddar', 'all_day',   '2025-04-04', TRUE),
   (5, 'Fruit Cup',               'Seasonal fresh fruit medley',                            'all_day',   '2025-04-04', TRUE),
   (5, 'Chocolate Chip Cookie',   'Large fresh-baked chocolate chip cookie',                'all_day',   '2025-04-04', TRUE),
-  (5, 'Bottled Water',           '500ml spring water',                                     'all_day',   '2025-04-04', TRUE);
+  (5, 'Bottled Water',           '500ml spring water',                                     'all_day',   '2025-04-04', TRUE),
+  -- Additional Stetson East — breakfast & lunch
+  (1, 'Pancakes',                'Three fluffy pancakes with syrup and butter',             'breakfast', '2025-04-04', TRUE),
+  (1, 'Hash Browns',             'Crispy golden hash browns',                              'breakfast', '2025-04-04', TRUE),
+  (1, 'Fruit Smoothie Bowl',     'Blended berries topped with granola and coconut',        'breakfast', '2025-04-04', TRUE),
+  (1, 'Turkey Meatballs',        'Lean turkey meatballs in marinara sauce',                'lunch',     '2025-04-04', TRUE),
+  (1, 'Sweet Potato Bowl',       'Roasted sweet potato, black beans, corn, cilantro',      'lunch',     '2025-04-04', TRUE),
+  (1, 'Grilled Fish Tacos',      'Mahi mahi, slaw, chipotle aioli in corn tortillas',      'dinner',    '2025-04-04', TRUE),
+  (1, 'Lentil Bolognese',        'Plant-based lentil pasta sauce with penne',              'dinner',    '2025-04-04', TRUE),
+  -- Additional Stetson West — lunch & dinner
+  (2, 'Falafel Wrap',            'Crispy falafel, hummus, lettuce, tomato in pita',        'lunch',     '2025-04-04', TRUE),
+  (2, 'Greek Salad',             'Feta, olives, cucumber, tomato, red onion, vinaigrette', 'lunch',     '2025-04-04', TRUE),
+  (2, 'Chicken Shawarma',        'Spiced rotisserie chicken, tahini, pickles',             'dinner',    '2025-04-04', TRUE),
+  (2, 'Roasted Vegetable Medley','Seasonal vegetables with garlic herb oil',               'dinner',    '2025-04-04', TRUE),
+  (2, 'Hummus & Veggie Platter', 'Carrots, celery, cucumber with house-made hummus',       'lunch',     '2025-04-04', TRUE),
+  -- Additional International Village — lunch & dinner
+  (3, 'Pad Thai',                'Rice noodles, egg, tofu, peanuts, lime',                 'dinner',    '2025-04-04', TRUE),
+  (3, 'Coconut Curry Soup',      'Rich coconut broth with vegetables and tofu',            'dinner',    '2025-04-04', TRUE),
+  (3, 'Spring Rolls',            'Rice paper rolls with shrimp, herbs, served with sauce', 'lunch',     '2025-04-04', TRUE),
+  (3, 'Japanese Teriyaki Bowl',  'Grilled chicken with sesame seeds over white rice',      'lunch',     '2025-04-04', TRUE),
+  (3, 'Vegetable Fried Rice',    'Jasmine rice with egg, peas, carrots, soy sauce',        'lunch',     '2025-04-04', TRUE),
+  -- Additional Levine Marketplace — variety
+  (4, 'Turkey Meatball Sub',     'Mini meatballs, marinara, mozzarella on Italian herbs roll', 'lunch', '2025-04-04', TRUE),
+  (4, 'Caprese Panini',          'Tomato, mozzarella, basil, balsamic on pressed bread',   'lunch',     '2025-04-04', TRUE),
+  (4, 'Blueberry Muffin',        'Fresh blueberries in a tender muffin',                   'breakfast', '2025-04-04', TRUE),
+  (4, 'Greek Yogurt',            'Plain non-fat Greek yogurt',                             'breakfast', '2025-04-04', TRUE),
+  (4, 'Mixed Nuts',              'Almonds, cashews, walnuts mix',                          'all_day',   '2025-04-04', TRUE),
+  (4, 'Tuna Poke Bowl',          'Sushi-grade tuna, rice, avocado, edamame, ginger',       'lunch',     '2025-04-04', TRUE),
+  -- Additional Outtakes — variety
+  (5, 'Pepperoni Pizza Slice',   'Pepperoni and mozzarella on thin crust',                 'all_day',   '2025-04-04', TRUE),
+  (5, 'Veggie Burger',           'Plant-based patty, avocado, lettuce, tomato, mayo',      'all_day',   '2025-04-04', TRUE),
+  (5, 'Chicken Tenders',         'Three crispy breaded chicken tenders with sauce',        'all_day',   '2025-04-04', TRUE),
+  (5, 'Granola Bar',             'Oats, honey, almonds with dark chocolate chips',         'all_day',   '2025-04-04', TRUE),
+  (5, 'Mixed Berry Yogurt Cup',  'Yogurt with mixed berries',                              'all_day',   '2025-04-04', TRUE);
 
 
 -- =============================================================
@@ -184,7 +217,63 @@ INSERT INTO menu_item_nutrients (item_id, nutrient_id, amount) VALUES
   -- Chocolate Chip Cookie (item 34)
   (34,1,290),(34,2,14.0),(34,6,180),(34,7,40.0),(34,8,1.0),(34,9,24.0),(34,10,3.0),
   -- Bottled Water (item 35)
-  (35,1,0),(35,2,0.0),(35,6,0),(35,7,0.0),(35,8,0.0),(35,9,0.0),(35,10,0.0);
+  (35,1,0),(35,2,0.0),(35,6,0),(35,7,0.0),(35,8,0.0),(35,9,0.0),(35,10,0.0),
+  -- Pancakes (item 36)
+  (36,1,310),(36,2,8.0),(36,6,420),(36,7,52.0),(36,8,2.0),(36,9,18.0),(36,10,8.0),
+  -- Hash Browns (item 37)
+  (37,1,160),(37,2,9.0),(37,6,310),(37,7,18.0),(37,8,1.5),(37,9,1.0),(37,10,2.0),
+  -- Fruit Smoothie Bowl (item 38)
+  (38,1,380),(38,2,8.0),(38,6,120),(38,7,68.0),(38,8,8.0),(38,9,35.0),(38,10,12.0),
+  -- Turkey Meatballs (item 39)
+  (39,1,280),(39,2,14.0),(39,6,640),(39,7,22.0),(39,8,2.0),(39,9,6.0),(39,10,28.0),
+  -- Sweet Potato Bowl (item 40)
+  (40,1,420),(40,2,8.0),(40,6,580),(40,7,72.0),(40,8,12.0),(40,9,18.0),(40,10,14.0),
+  -- Grilled Fish Tacos (item 41)
+  (41,1,390),(41,2,12.0),(41,6,720),(41,7,38.0),(41,8,6.0),(41,9,4.0),(41,10,38.0),
+  -- Lentil Bolognese (item 42)
+  (42,1,480),(42,2,6.0),(42,6,620),(42,7,82.0),(42,8,14.0),(42,9,8.0),(42,10,18.0),
+  -- Falafel Wrap (item 43)
+  (43,1,520),(43,2,24.0),(43,6,890),(43,7,54.0),(43,8,10.0),(43,9,6.0),(43,10,16.0),
+  -- Greek Salad (item 44)
+  (44,1,240),(44,2,14.0),(44,6,480),(44,7,18.0),(44,8,4.0),(44,9,6.0),(44,10,8.0),
+  -- Chicken Shawarma (item 45)
+  (45,1,460),(45,2,18.0),(45,6,820),(45,7,42.0),(45,8,4.0),(45,9,8.0),(45,10,38.0),
+  -- Roasted Vegetable Medley (item 46)
+  (46,1,180),(46,2,6.0),(46,6,320),(46,7,28.0),(46,8,7.0),(46,9,8.0),(46,10,6.0),
+  -- Hummus & Veggie Platter (item 47)
+  (47,1,280),(47,2,14.0),(47,6,340),(47,7,26.0),(47,8,7.0),(47,9,4.0),(47,10,8.0),
+  -- Pad Thai (item 48)
+  (48,1,420),(48,2,16.0),(48,6,840),(48,7,52.0),(48,8,4.0),(48,9,12.0),(48,10,16.0),
+  -- Coconut Curry Soup (item 49)
+  (49,1,320),(49,2,18.0),(49,6,720),(49,7,28.0),(49,8,4.0),(49,9,8.0),(49,10,14.0),
+  -- Spring Rolls (item 50)
+  (50,1,220),(50,2,6.0),(50,6,580),(50,7,32.0),(50,8,2.0),(50,9,4.0),(50,10,10.0),
+  -- Japanese Teriyaki Bowl (item 51)
+  (51,1,480),(51,2,12.0),(51,6,960),(51,7,68.0),(51,8,3.0),(51,9,14.0),(51,10,32.0),
+  -- Vegetable Fried Rice (item 52)
+  (52,1,380),(52,2,10.0),(52,6,840),(52,7,52.0),(52,8,4.0),(52,9,6.0),(52,10,10.0),
+  -- Turkey Meatball Sub (item 53)
+  (53,1,480),(53,2,16.0),(53,6,1020),(53,7,52.0),(53,8,3.0),(53,9,8.0),(53,10,32.0),
+  -- Caprese Panini (item 54)
+  (54,1,420),(54,2,18.0),(54,6,680),(54,7,38.0),(54,8,2.0),(54,9,4.0),(54,10,16.0),
+  -- Blueberry Muffin (item 55)
+  (55,1,380),(55,2,12.0),(55,6,420),(55,7,54.0),(55,8,2.0),(55,9,28.0),(55,10,6.0),
+  -- Greek Yogurt (item 56)
+  (56,1,130),(56,2,0.5),(56,6,75),(56,7,6.0),(56,8,0.0),(56,9,4.0),(56,10,22.0),
+  -- Mixed Nuts (item 57)
+  (57,1,720),(57,2,64.0),(57,6,180),(57,7,24.0),(57,8,14.0),(57,9,8.0),(57,10,24.0),
+  -- Tuna Poke Bowl (item 58)
+  (58,1,520),(58,2,14.0),(58,6,680),(58,7,54.0),(58,8,6.0),(58,9,6.0),(58,10,42.0),
+  -- Pepperoni Pizza Slice (item 59)
+  (59,1,420),(59,2,16.0),(59,6,840),(59,7,50.0),(59,8,2.0),(59,9,8.0),(59,10,18.0),
+  -- Veggie Burger (item 60)
+  (60,1,480),(60,2,16.0),(60,6,820),(60,7,56.0),(60,8,8.0),(60,9,6.0),(60,10,18.0),
+  -- Chicken Tenders (item 61)
+  (61,1,420),(61,2,18.0),(61,6,620),(61,7,34.0),(61,8,1.0),(61,9,2.0),(61,10,32.0),
+  -- Granola Bar (item 62)
+  (62,1,280),(62,2,12.0),(62,6,140),(62,7,34.0),(62,8,3.0),(62,9,16.0),(62,10,6.0),
+  -- Mixed Berry Yogurt Cup (item 63)
+  (63,1,180),(63,2,2.0),(63,6,110),(63,7,32.0),(63,8,2.0),(63,9,18.0),(63,10,12.0);
 
 
 -- =============================================================
@@ -371,6 +460,43 @@ INSERT INTO alerts (user_id, goal_id, alert_type, message, is_read, triggered_at
   (7, 13, 'below_min',   'You are currently below your minimum calorie goal of 2800 kcal for today.', FALSE, '2025-04-04 14:00:00'),
   -- System alert for all admins
   (4, NULL, 'system',    'Scheduled nightly data sync completed successfully.', TRUE, '2025-04-04 02:00:00');
+
+
+-- =============================================================
+-- SAVED_MEALS
+-- =============================================================
+INSERT INTO saved_meals (user_id, name, description, created_at) VALUES
+  (1, 'Energy Pre-Performance', 'Quick high-calorie combo before shows', '2025-03-20 10:15:00'),
+  (1, 'Post-Show Recovery', 'Protein-rich meal for recovery after performances', '2025-03-22 14:30:00'),
+  (1, 'Quick Lunch Between Classes', 'Fast balanced meal when schedule is packed', '2025-03-25 11:45:00'),
+  (2, 'Athlete Pre-Game', 'Carb and protein loaded for game day', '2025-03-18 09:00:00'),
+  (2, 'Recovery Bowl', 'High protein muscle recovery meal', '2025-03-20 16:20:00');
+
+
+-- =============================================================
+-- SAVED_MEAL_ITEMS
+-- =============================================================
+INSERT INTO saved_meal_items (saved_meal_id, item_id, servings) VALUES
+  -- Energy Pre-Performance: Grilled Chicken, Rice, Pasta
+  (1, 6, 1.5),   -- Grilled Chicken Breast
+  (1, 7, 1.0),   -- Brown Rice
+  (1, 19, 1.0),  -- Pasta Primavera
+  -- Post-Show Recovery: Salmon, Sweet Potato, Greek Yogurt
+  (2, 11, 1.5),  -- Salmon Fillet
+  (2, 15, 1.0),  -- Sweet Potato Fries
+  (2, 3, 1.0),   -- Greek Yogurt Parfait
+  -- Quick Lunch: Caesar Salad, Chicken, Bread
+  (3, 8, 1.0),   -- Caesar Salad
+  (3, 6, 1.0),   -- Grilled Chicken Breast
+  (3, 2, 1.0),   -- Whole Wheat Toast
+  -- Athlete Pre-Game: Pasta, Chicken, Vegetables
+  (4, 19, 1.5),  -- Pasta Primavera
+  (4, 6, 2.0),   -- Grilled Chicken Breast
+  (4, 9, 1.0),   -- Vegetable Stir Fry
+  -- Recovery Bowl: Salmon, Rice, Berries
+  (5, 11, 1.5),  -- Salmon Fillet
+  (5, 7, 1.0),   -- Brown Rice
+  (5, 33, 1.0);  -- Fruit Cup
 
 
 -- =============================================================
