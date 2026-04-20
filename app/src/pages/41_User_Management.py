@@ -1,19 +1,11 @@
-"""
-41_User_Management.py
-Laura Smith — User Management (Wireframe 7)
-Routes used: PUT 4.1 (update role), DELETE (deactivate user)
-"""
-
 import streamlit as st
 import requests
 from modules.nav import SideBarLinks
 
 API_BASE = "http://api:4000/admin"
 
-st.set_page_config(page_title="User Management", page_icon="👥", layout="wide")
+st.set_page_config(layout="wide", page_title="User Management", page_icon="👤")
 SideBarLinks()
-st.title("👥 User Management")
-st.caption("Admin · Laura Smith")
 
 # ---------- role lookup ----------
 ROLES = {1: "student", 2: "athlete", 3: "analyst", 4: "administrator"}

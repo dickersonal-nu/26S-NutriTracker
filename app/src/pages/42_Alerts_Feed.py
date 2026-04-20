@@ -1,18 +1,19 @@
-"""
-42_Alerts_Feed.py
-Laura Smith — Alerts Feed (Wireframe 8)
-Routes used: GET 4.6 (alerts), DELETE (dismiss alert)
-"""
-
 import streamlit as st
 import requests
 from datetime import datetime
 from modules.nav import SideBarLinks
 
+st.set_page_config(layout="wide", page_title="Alerts Feed", page_icon="🔔")
+SideBarLinks()
+
+
+if "role" not in st.session_state or st.session_state["role"] != "admin":
+    st.error("You must be logged in as an Admin to view this page.")
+    st.stop()
+
 API_BASE = "http://api:4000/admin"
 
-st.set_page_config(page_title="Alerts Feed", page_icon="🔔", layout="wide")
-SideBarLinks()
+
 st.title("🔔 Alerts Feed")
 st.caption("Admin · Laura Smith")
 
