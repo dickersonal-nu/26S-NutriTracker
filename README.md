@@ -58,7 +58,10 @@ NutriTracker stores data on food and tracks your daily intake with minimalistic 
 - Generate and queue summary reports
   
 ### For System Admins (Laura): *Joshua Barrera*
-[WRITE: 3-4 bullet points — Joshua's features]
+- Manage user accounts by being able to update roles or being able to restrict/deactivate accounts, with all changes being automatically recorded within the audit log
+- Monitor and dismiss system alerts filterable by severity (critical, warning, info) and resolution status
+- System alerta are able to be filtered by severity and resolution status
+- Being able to push dining hall item updates (name, calories, and effictive date) straight from the admin dashbord
 
 ---
 
