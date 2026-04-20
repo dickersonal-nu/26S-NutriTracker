@@ -7,7 +7,7 @@ st.set_page_config(layout="wide", page_title="Alerts Feed", page_icon="🔔")
 SideBarLinks()
 
 
-if "role" not in st.session_state or st.session_state["role"] != "admin":
+if "role" not in st.session_state or st.session_state["role"] != "administrator":
     st.error("You must be logged in as an Admin to view this page.")
     st.stop()
 
