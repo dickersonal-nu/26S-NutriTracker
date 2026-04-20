@@ -11,7 +11,7 @@ SideBarLinks()
 st.title("My Saved Meals")
 st.write("Your go-to meal combinations for quick decisions.")
 
-API_BASE = "http://localhost:5000/api"
+API_BASE = "http://api:4000"
 user_id = st.session_state.get('user_id')
 
 if not user_id:
@@ -72,7 +72,7 @@ try:
                             logger.error(f"Delete error: {e}")
 
                 with col_view:
-                    if st.button('Details', key=f"view_{meal['saved_meal_id']}"):
+                    if st.button('View', key=f"view_{meal['saved_meal_id']}"):
                         st.session_state['expand_meal_id'] = meal['saved_meal_id']
             
             if st.session_state.get('expand_meal_id') == meal['saved_meal_id']:

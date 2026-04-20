@@ -271,13 +271,11 @@ def browse_menu():
             SELECT mi.item_id, mi.name, mi.description, mi.meal_period,
                 dh.hall_id, dh.name AS dining_hall,
                 ROUND(SUM(CASE WHEN n.nutrient_id = 1 THEN min_t.amount ELSE 0 END), 0) AS calories,
-                ROUND(SUM(CASE WHEN n.nutrient_id = 10 THEN min_t.amount ELSE 0 END), 1) AS protein,
-                d.dietary_label
+                ROUND(SUM(CASE WHEN n.nutrient_id = 10 THEN min_t.amount ELSE 0 END), 1) AS protein
             FROM menu_items mi
             JOIN dining_halls dh ON mi.hall_id = dh.hall_id
             LEFT JOIN menu_item_nutrients min_t ON mi.item_id = min_t.item_id
             LEFT JOIN nutrients n ON min_t.nutrient_id = n.nutrient_id
-            LEFT JOIN demographics d ON d.dietary_label IS NOT NULL
             WHERE mi.available_date = %s
             AND mi.is_active = TRUE
             AND dh.is_active = TRUE
@@ -392,7 +390,9 @@ def list_saved_meals(user_id):
     cursor = get_db().cursor(dictionary=True)
     try:
         query = '''
-            SELECT sm.saved_meal_id, sm.name, sm.description, sm.created_at, sm.updated_at,
+            SELECT sm.saved_meal_id, sm.name, sm.description,
+                CAST(sm.created_at AS CHAR) AS created_at,
+                CAST(sm.updated_at AS CHAR) AS updated_at,
                 COUNT(smi.saved_item_id) AS item_count,
                    ROUND(SUM(CASE WHEN n.nutrient_id = 1 THEN min_t.amount * smi.servings ELSE 0 END), 0) AS total_calories,
                    ROUND(SUM(CASE WHEN n.nutrient_id = 10 THEN min_t.amount * smi.servings ELSE 0 END), 1) AS total_protein

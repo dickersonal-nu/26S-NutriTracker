@@ -11,7 +11,7 @@ SideBarLinks()
 st.title("Menu Browse & Quick Save")
 st.write("Find healthy meals and save your favorites.")
 
-API_BASE = "http://localhost:5000/api"
+API_BASE = "http://api:4000"
 
 st.subheader("Filter Options")
 col1, col2, col3 = st.columns(3)

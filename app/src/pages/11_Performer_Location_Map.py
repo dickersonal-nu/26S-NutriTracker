@@ -12,7 +12,7 @@ SideBarLinks()
 st.title("Dining Locations & Wait Times")
 st.write("Find the quickest dining option near you.")
 
-API_BASE = "http://localhost:5000/api"
+API_BASE = "http://api:4000"
 
 try:
     wait_response = requests.get(f"{API_BASE}/nutrition/wait-times", timeout=5)
