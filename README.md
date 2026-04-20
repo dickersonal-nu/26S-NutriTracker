@@ -129,6 +129,7 @@ docker compose up db -d
 26S-NutriTracker/
 ├── api/
 │   ├── backend/
+│   │   ├── admin/              # Laura's routes — user roles, metrics, audit, alerts, menu updates
 │   │   ├── analytics/          # Immanuel's routes — filter, trends, compare, outliers, reports, exports
 │   │   ├── nutrition/          # Shared nutrition routes:
 │   │   │                        #  - (Jasmine/Jason): daily, logs, goals, alerts
@@ -144,12 +145,14 @@ docker compose up db -d
 │       │                        #  - 10-13: Performer (Andrew/Jordan)
 │       │                        #  - 20-23: Athlete (Jasmine/Jason)
 │       │                        #  - 30-33: Analyst (Ryan/Immanuel)
-│       │                        #  - 40+: Admin (Joshua/Laura)
+│       │                        #  - 40-43: Admin (Joshua/Laura)
 │       └── modules/nav.py      # Sidebar navigation (role-based)
 ├── database-files/
-│   ├── 01_nutritracker_ddl.sql             # Schema (includes saved_meals tables)
+│   ├── 01_nutritracker_ddl.sql             # Schema
 │   ├── 02_nutritracker_data.sql            # Seed data (menu items, saved meals, nutrition data)
-│   └── 03_nutritracker_mock_analytics.sql  # Mock data for reports, exports, system metrics, audit logs
+│   ├── 02_seed_admin.sql                   # Seed data (users, dining halls, admin tables)
+│   ├── 03_nutritracker_mock_analytics.sql  # Mock data for reports, exports, system metrics, audit logs
+│   └── 04_nutritracker_athlete_data.sql    # Mock data for meal logs, goals, alerts
 └── docker-compose.yaml
 ```
 
