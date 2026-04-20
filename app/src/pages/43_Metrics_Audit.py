@@ -1,7 +1,7 @@
 """
 43_Metrics_Audit.py
 Laura Smith — System Metrics + Audit Logs
-Routes used: GET 4.2 (metrics), GET 4.3 (audit logs)
+Routes used: GET 4.2 (metrics), GET 4.3 (audit logs), GET 4.5 (reports)
 """
 
 import streamlit as st
@@ -16,9 +16,10 @@ SideBarLinks()
 st.title("📊 System Metrics & Audit Logs")
 st.caption("Admin · Laura Smith")
 
-tab1, tab2 = st.tabs(["📈 System Metrics", "📋 Audit Logs"])
+tab1, tab2, tab3 = st.tabs(["📈 System Metrics", "📋 Reports", "📝 Audit Logs"])
 
 
+# ==================== TAB 1: METRICS ====================
 with tab1:
     st.subheader("System Metrics")
 
@@ -30,42 +31,29 @@ with tab1:
         if since_str:
             params["since"] = since_str
         try:
-            r = requests.get(f"{API_BASE}/metrics", params=params)
+            r = requests.get(f"{API_BASE}/metrics", params=params, timeout=5)
             return r.json().get("metrics", [])
         except Exception:
-            # Mock data
-            return [
-                {"metric_id": 1, "name": "active_users",       "value": 28,    "recorded_at": "2026-04-17T10:00:00"},
-                {"metric_id": 2, "name": "meals_served_today",  "value": 412,   "recorded_at": "2026-04-17T10:00:00"},
-                {"metric_id": 3, "name": "api_requests_hour",   "value": 1840,  "recorded_at": "2026-04-17T10:00:00"},
-                {"metric_id": 4, "name": "db_query_avg_ms",     "value": 23,    "recorded_at": "2026-04-17T10:00:00"},
-                {"metric_id": 5, "name": "active_users",        "value": 21,    "recorded_at": "2026-04-16T10:00:00"},
-                {"metric_id": 6, "name": "meals_served_today",  "value": 388,   "recorded_at": "2026-04-16T10:00:00"},
-            ]
+            return []
 
     metrics = fetch_metrics(str(since) if since else None)
 
     if metrics:
         df = pd.DataFrame(metrics)
 
+        # summary cards from latest values
         col1, col2, col3, col4 = st.columns(4)
-        latest = {m["name"]: m["value"] for m in metrics[:4]}
+        latest = {m["metric_type"]: m["value"] for m in metrics[:6]}
         with col1:
-            st.metric("Active Users",         latest.get("active_users",      "—"))
+            st.metric("Active Users",       latest.get("active_users", "—"))
         with col2:
-            st.metric("Meals Served Today",   latest.get("meals_served_today","—"))
+            st.metric("API Req/min",        latest.get("api_requests_per_min", "—"))
         with col3:
-            st.metric("API Requests/hr",      latest.get("api_requests_hour", "—"))
+            st.metric("Avg DB Query (ms)",  latest.get("db_query_avg_ms", "—"))
         with col4:
-            st.metric("Avg DB Query (ms)",    latest.get("db_query_avg_ms",   "—"))
+            st.metric("Error Rate (%)",     latest.get("error_rate", "—"))
 
         st.divider()
-
-        meals_df = df[df["name"] == "meals_served_today"].copy()
-        if not meals_df.empty:
-            meals_df["recorded_at"] = pd.to_datetime(meals_df["recorded_at"])
-            meals_df = meals_df.sort_values("recorded_at")
-            st.line_chart(meals_df.set_index("recorded_at")["value"], use_container_width=True)
 
         with st.expander("Raw metrics data"):
             st.dataframe(df, use_container_width=True)
@@ -73,14 +61,61 @@ with tab1:
         st.info("No metrics available.")
 
 
+# ==================== TAB 2: REPORTS ====================
 with tab2:
+    st.subheader("Generated Reports")
+
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        report_type = st.selectbox(
+            "Filter by type",
+            ["All", "nutrition_summary", "trend_analysis"],
+            key="report_type",
+        )
+    with col2:
+        report_limit = st.number_input("Limit", min_value=1, max_value=100, value=20, key="rep_limit")
+
+    if st.button("Load Reports", key="load_reports"):
+        params = {"limit": report_limit}
+        if report_type != "All":
+            params["type"] = report_type
+        try:
+            r = requests.get(f"{API_BASE}/reports", params=params, timeout=5)
+            if r.status_code == 200:
+                data    = r.json()
+                reports = data.get("reports", [])
+                st.markdown(f"**{data.get('count', 0)} report(s) found.**")
+
+                if reports:
+                    for rep in reports:
+                        status_icon = "✅" if rep.get("status") == "complete" else "⏳"
+                        with st.expander(
+                            f"{status_icon} {rep.get('title', 'Untitled')} "
+                            f"— `{rep.get('report_type', '')}` "
+                            f"| {rep.get('status', '')} "
+                            f"| {rep.get('generated_at', 'pending')}"
+                        ):
+                            st.write(f"**Report ID:** {rep.get('report_id')}")
+                            st.write(f"**Created by user:** {rep.get('created_by', 'system')}")
+                            if rep.get('file_path'):
+                                st.write(f"**File:** {rep['file_path']}")
+                else:
+                    st.info("No reports found.")
+            else:
+                st.error(f"API error {r.status_code}")
+        except Exception as e:
+            st.error(f"Could not reach API: {e}")
+
+
+# ==================== TAB 3: AUDIT LOGS ====================
+with tab3:
     st.subheader("Audit Logs")
 
     col1, col2 = st.columns([2, 1])
     with col1:
         action_filter = st.selectbox(
             "Filter by action",
-            ["All", "update_role", "deactivate_user", "push_menu_update", "login", "logout"],
+            ["All", "INSERT", "UPDATE", "DELETE"],
         )
     with col2:
         limit = st.number_input("Max rows", min_value=10, max_value=500, value=50, step=10)
@@ -91,39 +126,38 @@ with tab2:
         if action and action != "All":
             params["action"] = action
         try:
-            r = requests.get(f"{API_BASE}/audit-logs", params=params)
+            r = requests.get(f"{API_BASE}/audit-logs", params=params, timeout=5)
             return r.json().get("logs", [])
         except Exception:
-            return [
-                {"log_id": 1, "action": "update_role",      "target_type": "user", "target_id": 3,  "detail": "Role changed from 'guest' to 'student'", "timestamp": "2026-04-17T09:00:00"},
-                {"log_id": 2, "action": "push_menu_update",  "target_type": "dining_hall", "target_id": 5, "detail": "Menu updated for 2026-04-18 — 12 items", "timestamp": "2026-04-17T08:45:00"},
-                {"log_id": 3, "action": "deactivate_user",   "target_type": "user", "target_id": 4,  "detail": "User 'inactive_usr' deactivated",        "timestamp": "2026-04-16T17:30:00"},
-                {"log_id": 4, "action": "update_role",       "target_type": "user", "target_id": 2,  "detail": "Role changed from 'student' to 'staff'",  "timestamp": "2026-04-15T11:00:00"},
-            ]
+            return []
 
     logs = fetch_audit_logs(action_filter if action_filter != "All" else None, limit)
 
     if logs:
-        df_logs = pd.DataFrame(logs)
-        st.caption(f"{len(df_logs)} log entries")
+        st.caption(f"{len(logs)} log entries")
 
         ACTION_ICON = {
-            "update_role":      "🔄",
-            "deactivate_user":  "🚫",
-            "push_menu_update": "📋",
-            "login":            "🔓",
-            "logout":           "🔒",
+            "INSERT": "➕",
+            "UPDATE": "🔄",
+            "DELETE": "🗑️",
         }
 
         for log in logs:
-            icon = ACTION_ICON.get(log["action"], "📝")
+            icon = ACTION_ICON.get(log.get("action"), "📝")
             with st.container(border=True):
                 c1, c2 = st.columns([4, 1])
                 with c1:
-                    st.markdown(f"{icon} **{log['action']}** — {log['detail']}")
-                    st.caption(f"{log['target_type'].title()} ID #{log['target_id']}")
+                    st.markdown(f"{icon} **{log.get('action')}** on `{log.get('table_name')}`")
+                    old = log.get("old_values")
+                    new = log.get("new_values")
+                    if old:
+                        st.caption(f"Old: {old}")
+                    if new:
+                        st.caption(f"New: {new}")
+                    if log.get("user_id"):
+                        st.caption(f"By user #{log['user_id']}")
                 with c2:
-                    ts = log.get("timestamp", "")
+                    ts = log.get("performed_at", "")
                     try:
                         from datetime import datetime
                         dt = datetime.fromisoformat(ts)

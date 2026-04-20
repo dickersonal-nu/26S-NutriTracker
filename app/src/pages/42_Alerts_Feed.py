@@ -16,69 +16,78 @@ SideBarLinks()
 st.title("🔔 Alerts Feed")
 st.caption("Admin · Laura Smith")
 
-@st.cache_data(ttl=15)
-def fetch_alerts(show_resolved=False):
-    try:
-        r = requests.get(f"{API_BASE}/alerts", params={"resolved": str(show_resolved).lower()})
-        return r.json().get("alerts", [])
-    except Exception:
-        # Mock data for dev
-        return [
-            {"alert_id": 1, "title": "Low inventory: Dining Hall A",   "severity": "high",   "message": "Milk stock below threshold.",         "created_at": "2026-04-17T08:00:00", "resolved": False},
-            {"alert_id": 2, "title": "Menu update failed",              "severity": "medium", "message": "West Village push returned 500.",     "created_at": "2026-04-17T09:15:00", "resolved": False},
-            {"alert_id": 3, "title": "New user spike",                  "severity": "low",    "message": "35 new registrations in 1 hour.",     "created_at": "2026-04-17T10:30:00", "resolved": False},
-            {"alert_id": 4, "title": "DB backup completed",             "severity": "low",    "message": "Nightly backup finished successfully.", "created_at": "2026-04-16T23:00:00", "resolved": True},
-        ]
-
-col1, col2 = st.columns([3, 1])
+# ---------- filters ----------
+col1, col2 = st.columns([2, 2])
 with col1:
-    severity_filter = st.selectbox("Filter by severity", ["All", "high", "medium", "low"])
+    type_filter = st.selectbox(
+        "Filter by alert type",
+        ["All", "exceeded_max", "below_min", "system"],
+    )
 with col2:
-    show_resolved = st.toggle("Show resolved", value=False)
+    show_read = st.radio("Show", ["Unread", "Read"], horizontal=True)
 
-alerts = fetch_alerts(show_resolved)
+# ---------- fetch ----------
+is_read = "true" if show_read == "Read" else "false"
+params = {"is_read": is_read}
+if type_filter != "All":
+    params["alert_type"] = type_filter
 
-if severity_filter != "All":
-    alerts = [a for a in alerts if a["severity"] == severity_filter]
+try:
+    r = requests.get(f"{API_BASE}/alerts", params=params, timeout=5)
+    if r.status_code == 200:
+        alerts = r.json().get("alerts", [])
+    else:
+        st.error(f"API error {r.status_code}")
+        alerts = []
+except Exception as e:
+    st.error(f"Could not reach API: {e}")
+    alerts = []
 
-unresolved_count = len([a for a in alerts if not a.get("resolved")])
-st.caption(f"{unresolved_count} unresolved alert{'s' if unresolved_count != 1 else ''}")
+st.markdown(f"**{len(alerts)} alert(s) found.**")
 st.divider()
 
-SEVERITY_ICON  = {"high": "🔴", "medium": "🟡", "low": "🔵"}
-SEVERITY_COLOR = {"high": "#ff4b4b", "medium": "#ffa600", "low": "#1f77b4"}
+# ---------- display ----------
+TYPE_ICON = {
+    "exceeded_max": "🔴",
+    "below_min":    "🟡",
+    "system":       "🔵",
+}
 
 if not alerts:
-    st.info("No alerts to display.")
+    st.info("No alerts match the selected filters.")
 else:
     for alert in alerts:
-        sev  = alert.get("severity", "low")
-        icon = SEVERITY_ICON.get(sev, "⚪")
-        resolved = alert.get("resolved", False)
+        alert_id   = alert.get("alert_id")
+        alert_type = alert.get("alert_type", "system")
+        message    = alert.get("message", "")
+        triggered  = alert.get("triggered_at", "")
+        read       = alert.get("is_read", False)
+        icon       = TYPE_ICON.get(alert_type, "⚪")
 
         with st.container(border=True):
-            col1, col2 = st.columns([5, 1])
+            left, right = st.columns([5, 1])
 
-            with col1:
-                st.markdown(f"**{icon} {alert['title']}**")
-                st.caption(alert.get("message", ""))
-                ts = alert.get("created_at", "")
-                if ts:
+            with left:
+                st.markdown(f"#### {icon} {alert_type}")
+                st.markdown(f"{message}")
+                if triggered:
                     try:
-                        dt = datetime.fromisoformat(ts)
+                        dt = datetime.fromisoformat(triggered)
                         st.caption(f"🕐 {dt.strftime('%b %d, %Y at %I:%M %p')}")
                     except Exception:
-                        st.caption(ts)
+                        st.caption(triggered)
 
-            with col2:
-                if not resolved:
-                    if st.button("✓ Dismiss", key=f"dismiss_{alert['alert_id']}", type="primary"):
-                        resp = requests.delete(f"{API_BASE}/alerts/{alert['alert_id']}")
-                        if resp.status_code == 200:
-                            st.success("Dismissed")
-                            st.cache_data.clear()
-                            st.rerun()
-                        else:
-                            st.error("Failed to dismiss")
+            with right:
+                if not read:
+                    if st.button("Dismiss", key=f"dismiss_{alert_id}", use_container_width=True):
+                        try:
+                            resp = requests.delete(f"{API_BASE}/alerts/{alert_id}", timeout=5)
+                            if resp.status_code == 200:
+                                st.success(f"Alert {alert_id} dismissed.")
+                                st.rerun()
+                            else:
+                                st.error(f"Error: {resp.status_code}")
+                        except Exception as e:
+                            st.error(f"Could not reach API: {e}")
                 else:
-                    st.caption("✅ Resolved")
+                    st.caption("✅ Read")

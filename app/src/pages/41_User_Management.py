@@ -15,85 +15,66 @@ SideBarLinks()
 st.title("👥 User Management")
 st.caption("Admin · Laura Smith")
 
-@st.cache_data(ttl=30)
-def fetch_users():
+# ---------- role lookup ----------
+ROLES = {1: "student", 2: "athlete", 3: "analyst", 4: "administrator"}
+ROLE_IDS = {v: k for k, v in ROLES.items()}
+
+# ---------- update role ----------
+st.subheader("Update User Role")
+
+with st.form("update_role_form"):
+    user_id_role = st.number_input("User ID", min_value=1, step=1, key="role_uid")
+    new_role = st.selectbox("New Role", list(ROLES.values()))
+    submitted_role = st.form_submit_button("Update Role", use_container_width=True)
+
+if submitted_role:
+    new_role_id = ROLE_IDS[new_role]
     try:
-        r = requests.get(f"{API_BASE}/users")
-        return r.json().get("users", [])
-    except Exception:
-        # Mock data
-        return [
-            {"user_id": 1,  "username": "laurasmith",  "email": "laura@example.com",  "role": "admin",   "is_active": True},
-            {"user_id": 2,  "username": "ryang",        "email": "ryan@example.com",   "role": "staff",   "is_active": True},
-            {"user_id": 3,  "username": "jsmith42",     "email": "j42@example.com",    "role": "student", "is_active": True},
-            {"user_id": 4,  "username": "inactive_usr", "email": "old@example.com",    "role": "guest",   "is_active": False},
-        ]
+        r = requests.put(
+            f"{API_BASE}/users/{int(user_id_role)}/role",
+            json={"role_id": new_role_id},
+            timeout=5,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            st.success(
+                f"✅ User {data['user_id']} role updated to "
+                f"**{data.get('new_role_name', new_role)}**"
+            )
+        elif r.status_code == 404:
+            st.error(f"User {int(user_id_role)} not found.")
+        elif r.status_code == 422:
+            st.error(r.json().get("error", "Invalid role."))
+        else:
+            st.error(f"Unexpected error: {r.status_code}")
+    except Exception as e:
+        st.error(f"Could not reach API: {e}")
 
-users = fetch_users()
-
-col1, col2 = st.columns([2, 1])
-with col1:
-    search = st.text_input("🔍 Search by username or email", placeholder="Type to filter...")
-with col2:
-    role_filter = st.selectbox("Filter by role", ["All", "admin", "staff", "student", "nutrition_manager", "guest"])
-
-active_filter = st.checkbox("Show active users only", value=True)
-
-filtered = users
-if search:
-    filtered = [u for u in filtered if search.lower() in u["username"].lower() or search.lower() in u["email"].lower()]
-if role_filter != "All":
-    filtered = [u for u in filtered if u["role"] == role_filter]
-if active_filter:
-    filtered = [u for u in filtered if u["is_active"]]
-
-st.caption(f"Showing {len(filtered)} of {len(users)} users")
 st.divider()
 
-ROLES = ["student", "staff", "admin", "nutrition_manager", "guest"]
+# ---------- deactivate user ----------
+st.subheader("Deactivate User")
+st.warning("⚠️ This action soft-deletes the user. They will no longer be able to log in.")
 
-for user in filtered:
-    with st.container(border=True):
-        col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+with st.form("deactivate_user_form"):
+    user_id_deact = st.number_input("User ID", min_value=1, step=1, key="deact_uid")
+    confirm = st.checkbox("I understand this will deactivate the user account.")
+    submitted_deact = st.form_submit_button("Deactivate User", use_container_width=True)
 
-        with col1:
-            status_icon = "🟢" if user["is_active"] else "🔴"
-            st.markdown(f"**{user['username']}** {status_icon}")
-            st.caption(user["email"])
-
-        with col2:
-            st.caption("User ID")
-            st.write(f"#{user['user_id']}")
-
-        with col3:
-            new_role = st.selectbox(
-                "Role",
-                options=ROLES,
-                index=ROLES.index(user["role"]) if user["role"] in ROLES else 0,
-                key=f"role_{user['user_id']}",
+if submitted_deact:
+    if not confirm:
+        st.error("Please check the confirmation box before proceeding.")
+    else:
+        try:
+            r = requests.delete(
+                f"{API_BASE}/users/{int(user_id_deact)}",
+                timeout=5,
             )
-            if new_role != user["role"]:
-                if st.button("Save", key=f"save_{user['user_id']}", type="primary"):
-                    resp = requests.put(
-                        f"{API_BASE}/users/{user['user_id']}/role",
-                        json={"role": new_role},
-                    )
-                    if resp.status_code == 200:
-                        st.success(f"Role updated to {new_role}")
-                        st.cache_data.clear()
-                        st.rerun()
-                    else:
-                        st.error("Failed to update role")
-
-        with col4:
-            if user["is_active"]:
-                if st.button("🚫 Deactivate", key=f"deact_{user['user_id']}", type="secondary"):
-                    resp = requests.delete(f"{API_BASE}/users/{user['user_id']}")
-                    if resp.status_code == 200:
-                        st.warning(f"User {user['username']} deactivated")
-                        st.cache_data.clear()
-                        st.rerun()
-                    else:
-                        st.error("Failed to deactivate user")
+            if r.status_code == 200:
+                st.success(f"✅ User {int(user_id_deact)} has been deactivated.")
+            elif r.status_code == 404:
+                st.error(f"User {int(user_id_deact)} not found.")
             else:
-                st.caption("Inactive")
+                st.error(f"Unexpected error: {r.status_code}")
+        except Exception as e:
+            st.error(f"Could not reach API: {e}")
