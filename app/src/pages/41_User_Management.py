@@ -6,10 +6,12 @@ Routes used: PUT 4.1 (update role), DELETE (deactivate user)
 
 import streamlit as st
 import requests
+from modules.nav import SideBarLinks
 
-API_BASE = "http://localhost:5000/admin"
+API_BASE = "http://api:4000/admin"
 
 st.set_page_config(page_title="User Management", page_icon="👥", layout="wide")
+SideBarLinks()
 st.title("👥 User Management")
 st.caption("Admin · Laura Smith")
 

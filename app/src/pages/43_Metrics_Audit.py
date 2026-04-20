@@ -7,10 +7,12 @@ Routes used: GET 4.2 (metrics), GET 4.3 (audit logs)
 import streamlit as st
 import requests
 import pandas as pd
+from modules.nav import SideBarLinks
 
-API_BASE = "http://localhost:5000/admin"
+API_BASE = "http://api:4000/admin"
 
 st.set_page_config(page_title="Metrics & Audit Logs", page_icon="📊", layout="wide")
+SideBarLinks()
 st.title("📊 System Metrics & Audit Logs")
 st.caption("Admin · Laura Smith")
 

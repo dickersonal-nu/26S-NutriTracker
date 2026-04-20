@@ -7,10 +7,12 @@ Routes used: GET 4.6 (alerts), DELETE (dismiss alert)
 import streamlit as st
 import requests
 from datetime import datetime
+from modules.nav import SideBarLinks
 
-API_BASE = "http://localhost:5000/admin"
+API_BASE = "http://api:4000/admin"
 
 st.set_page_config(page_title="Alerts Feed", page_icon="🔔", layout="wide")
+SideBarLinks()
 st.title("🔔 Alerts Feed")
 st.caption("Admin · Laura Smith")
 

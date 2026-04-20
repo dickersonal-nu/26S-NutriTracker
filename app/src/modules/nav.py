@@ -70,6 +70,18 @@ def admin_home_nav():
     st.sidebar.page_link("pages/40_Admin_Home.py", label="Laura Home", icon="🔐")
 
 
+def admin_user_management_nav():
+    st.sidebar.page_link("pages/41_User_Management.py", label="User Management", icon="👥")
+
+
+def admin_alerts_nav():
+    st.sidebar.page_link("pages/42_Alerts_Feed.py", label="Alerts Feed", icon="🔔")
+
+
+def admin_metrics_nav():
+    st.sidebar.page_link("pages/43_Metrics_Audit.py", label="Metrics & Audit Logs", icon="📊")
+
+
 # ---- Sidebar assembly -------------------------------------------------------
 
 def SideBarLinks(show_home=False):
@@ -115,11 +127,14 @@ def SideBarLinks(show_home=False):
         # Administrator persona (Laura Smith)
         elif st.session_state["role"] == "administrator":
             admin_home_nav()
+            admin_user_management_nav()
+            admin_alerts_nav()
+            admin_metrics_nav()
 
     if st.session_state["authenticated"]:
         if st.sidebar.button("Logout"):
             del st.session_state["role"]
             del st.session_state["authenticated"]
-            del st.session_state.get("user_id", None)
-            del st.session_state.get("first_name", None)
+            st.session_state.pop("user_id", None)
+            st.session_state.pop("first_name", None)
             st.switch_page("Home.py")
