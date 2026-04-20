@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from datetime import datetime
 from modules.nav import SideBarLinks
 
 st.set_page_config(layout="wide", page_title="Alerts Feed", page_icon="🔔")
@@ -10,36 +11,30 @@ if "role" not in st.session_state or st.session_state["role"] != "admin":
     st.error("You must be logged in as an Admin to view this page.")
     st.stop()
 
-API_BASE = "http://api:4000"
+API_BASE = "http://api:4000/admin"
 
 
 st.title("🔔 Alerts Feed")
-st.markdown("View active system alerts and dismiss them when resolved.")
-st.divider()
+st.caption("Admin · Laura Smith")
 
-
+# ---------- filters ----------
 col1, col2 = st.columns([2, 2])
 with col1:
-    severity_filter = st.selectbox(
-        "Filter by Severity",
-        ["All", "critical", "warning", "info"],
+    type_filter = st.selectbox(
+        "Filter by alert type",
+        ["All", "exceeded_max", "below_min", "system"],
     )
 with col2:
-    show_resolved = st.radio(
-        "Show",
-        ["Unresolved", "Resolved"],
-        horizontal=True,
-    )
+    show_read = st.radio("Show", ["Unread", "Read"], horizontal=True)
 
-resolved_param = "true" if show_resolved == "Resolved" else "false"
-
-params = {"resolved": resolved_param}
-if severity_filter != "All":
-    params["severity"] = severity_filter
-
+# ---------- fetch ----------
+is_read = "true" if show_read == "Read" else "false"
+params = {"is_read": is_read}
+if type_filter != "All":
+    params["alert_type"] = type_filter
 
 try:
-    r = requests.get(f"{API_BASE}/admin/alerts", params=params, timeout=5)
+    r = requests.get(f"{API_BASE}/alerts", params=params, timeout=5)
     if r.status_code == 200:
         alerts = r.json().get("alerts", [])
     else:
@@ -52,40 +47,42 @@ except Exception as e:
 st.markdown(f"**{len(alerts)} alert(s) found.**")
 st.divider()
 
-
-SEVERITY_COLOR = {
-    "critical": "🔴",
-    "warning":  "🟡",
-    "info":     "🔵",
+# ---------- display ----------
+TYPE_ICON = {
+    "exceeded_max": "🔴",
+    "below_min":    "🟡",
+    "system":       "🔵",
 }
-
 
 if not alerts:
     st.info("No alerts match the selected filters.")
 else:
     for alert in alerts:
-        alert_id = alert.get("alert_id")
-        title    = alert.get("title", "Untitled")
-        detail   = alert.get("detail", "")
-        severity = alert.get("severity", "info")
-        created  = alert.get("created_at", "")
-        icon     = SEVERITY_COLOR.get(severity, "⚪")
+        alert_id   = alert.get("alert_id")
+        alert_type = alert.get("alert_type", "system")
+        message    = alert.get("message", "")
+        triggered  = alert.get("triggered_at", "")
+        read       = alert.get("is_read", False)
+        icon       = TYPE_ICON.get(alert_type, "⚪")
 
         with st.container(border=True):
             left, right = st.columns([5, 1])
+
             with left:
-                st.markdown(f"#### {icon} {title}")
-                st.markdown(f"**Severity:** `{severity}` &nbsp;|&nbsp; **Created:** {created}")
-                if detail:
-                    st.markdown(f"> {detail}")
+                st.markdown(f"#### {icon} {alert_type}")
+                st.markdown(f"{message}")
+                if triggered:
+                    try:
+                        dt = datetime.fromisoformat(triggered)
+                        st.caption(f"🕐 {dt.strftime('%b %d, %Y at %I:%M %p')}")
+                    except Exception:
+                        st.caption(triggered)
+
             with right:
-                if show_resolved == "Unresolved":
+                if not read:
                     if st.button("Dismiss", key=f"dismiss_{alert_id}", use_container_width=True):
                         try:
-                            resp = requests.delete(
-                                f"{API_BASE}/admin/alerts/{alert_id}",
-                                timeout=5,
-                            )
+                            resp = requests.delete(f"{API_BASE}/alerts/{alert_id}", timeout=5)
                             if resp.status_code == 200:
                                 st.success(f"Alert {alert_id} dismissed.")
                                 st.rerun()
@@ -94,5 +91,4 @@ else:
                         except Exception as e:
                             st.error(f"Could not reach API: {e}")
                 else:
-                    resolved_at = alert.get("resolved_at", "")
-                    st.markdown(f"✅ Resolved  \n`{resolved_at}`")
+                    st.caption("✅ Read")
