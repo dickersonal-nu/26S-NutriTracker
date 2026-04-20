@@ -230,3 +230,208 @@ def delete_meal_log(log_id):
     except Error as e:
         current_app.logger.error(f'DELETE /nutrition/log/{log_id} error: {e}')
         return jsonify({'error': str(e)}), 500
+
+
+# Jordan Carter (Artist and Performer) Dining Hall Routes
+
+@nutrition.route('/dining-halls', methods=['GET'])
+def get_dining_halls():
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        query = '''
+            SELECT hall_id, name, location, building_code, latitude, longitude, operating_hours
+            FROM dining_halls
+            WHERE is_active = TRUE
+            ORDER BY name
+        '''
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return jsonify({
+            'status': 'success',
+            'data': results,
+            'count': len(results)
+        }), 200
+    except Error as e:
+        current_app.logger.error(f'GET /nutrition/dining-halls error: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@nutrition.route('/menu-browse', methods=['GET'])
+def browse_menu():
+    hall_id = request.args.get('hall_id', type=int)
+    meal_period = request.args.get('meal_period')
+    dietary_label = request.args.get('dietary_label')
+    search = request.args.get('search', '')
+    available_date = request.args.get('date', '2025-04-04')
+
+    cursor = get_db().cursor(dictionary=True)
+
+    try:
+        query = '''
+            SELECT mi.item_id, mi.name, mi.description, mi.meal_period,
+                dh.hall_id, dh.name AS dining_hall,
+                ROUND(SUM(CASE WHEN n.nutrient_id = 1 THEN min_t.amount ELSE 0 END), 0) AS calories,
+                ROUND(SUM(CASE WHEN n.nutrient_id = 10 THEN min_t.amount ELSE 0 END), 1) AS protein,
+                d.dietary_label
+            FROM menu_items mi
+            JOIN dining_halls dh ON mi.hall_id = dh.hall_id
+            LEFT JOIN menu_item_nutrients min_t ON mi.item_id = min_t.item_id
+            LEFT JOIN nutrients n ON min_t.nutrient_id = n.nutrient_id
+            LEFT JOIN demographics d ON d.dietary_label IS NOT NULL
+            WHERE mi.available_date = %s
+            AND mi.is_active = TRUE
+            AND dh.is_active = TRUE
+        '''
+
+        params = [available_date]
+        
+        if hall_id:
+            query += ' AND dh.hall_id = %s'
+            params.append(hall_id)
+        if meal_period:
+            query += ' AND mi.meal_period IN (%s, "all_day")'
+            params.append(meal_period)
+        if search:
+            query += ' AND mi.name LIKE %s'
+            params.append(f'%{search}%')
+        query += '''
+            GROUP BY mi.item_id, mi.name, mi.description, mi.meal_period, dh.hall_id, dh.name
+            ORDER BY dh.name, mi.name
+        '''
+        
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        return jsonify({
+            'status': 'success',
+            'data': results,
+            'filters': {
+                'hall_id': hall_id,
+                'meal_period': meal_period,
+                'dietary_label': dietary_label,
+                'search': search,
+                'date': available_date
+            },
+            'count': len(results)
+        }), 200
+    except Error as e:
+        current_app.logger.error(f'GET /nutrition/menu-browse error: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@nutrition.route('/wait-times', methods=['GET'])
+def get_wait_times():
+    hall_id = request.args.get('hall_id', type=int)
+    
+    wait_time_data = {
+        1: {'hall_id': 1, 'name': 'Stetson East', 'wait_minutes': 8, 'peak_hours': ['11:30-13:00', '17:30-19:00']},
+        2: {'hall_id': 2, 'name': 'Stetson West', 'wait_minutes': 12, 'peak_hours': ['12:00-13:30', '18:00-19:30']},
+        3: {'hall_id': 3, 'name': 'International Village', 'wait_minutes': 15, 'peak_hours': ['12:30-14:00', '18:30-20:00']},
+        4: {'hall_id': 4, 'name': 'Levine Marketplace', 'wait_minutes': 5, 'peak_hours': ['10:30-11:30', '14:00-15:00']},
+        5: {'hall_id': 5, 'name': 'Outtakes Express', 'wait_minutes': 3, 'peak_hours': ['10:00-11:00', '13:00-14:30']}
+    }
+    
+    try:
+        if hall_id:
+            if hall_id not in wait_time_data:
+                return jsonify({'status': 'error', 'message': f'Hall {hall_id} not found'}), 404
+            return jsonify({
+                'status': 'success',
+                'data': wait_time_data[hall_id],
+                'source': 'demo_estimate'
+            }), 200
+        else:
+            return jsonify({
+                'status': 'success',
+                'data': list(wait_time_data.values()),
+                'source': 'demo_estimate',
+                'count': len(wait_time_data)
+            }), 200
+    except Exception as e:
+        current_app.logger.error(f'GET /nutrition/wait-times error: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@nutrition.route('/saved-meals', methods=['POST'])
+def create_saved_meal():
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        name = data.get('name')
+        description = data.get('description', '')
+        items = data.get('items', [])
+        if not all([user_id, name]):
+            return jsonify({'status': 'error', 'message': 'user_id and name are required'}), 400
+        if not items:
+            return jsonify({'status': 'error', 'message': 'At least one item must be included'}), 400
+        cursor.execute(
+            'INSERT INTO saved_meals (user_id, name, description) VALUES (%s, %s, %s)',
+            (user_id, name, description)
+        )
+        saved_meal_id = cursor.lastrowid
+        for item in items:
+            cursor.execute(
+                'INSERT INTO saved_meal_items (saved_meal_id, item_id, servings) VALUES (%s, %s, %s)',
+                (saved_meal_id, item['item_id'], item.get('servings', 1.0))
+            )
+        get_db().commit()
+        return jsonify({
+            'status': 'success',
+            'message': 'Saved meal created',
+            'saved_meal_id': saved_meal_id,
+            'item_count': len(items)
+        }), 201
+    except Error as e:
+        current_app.logger.error(f'POST /nutrition/saved-meals error: {e}')
+        get_db().rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@nutrition.route('/saved-meals/<int:user_id>', methods=['GET'])
+def list_saved_meals(user_id):
+    cursor = get_db().cursor(dictionary=True)
+    try:
+        query = '''
+            SELECT sm.saved_meal_id, sm.name, sm.description, sm.created_at, sm.updated_at,
+                COUNT(smi.saved_item_id) AS item_count,
+                   ROUND(SUM(CASE WHEN n.nutrient_id = 1 THEN min_t.amount * smi.servings ELSE 0 END), 0) AS total_calories,
+                   ROUND(SUM(CASE WHEN n.nutrient_id = 10 THEN min_t.amount * smi.servings ELSE 0 END), 1) AS total_protein
+            FROM saved_meals sm
+            LEFT JOIN saved_meal_items smi ON sm.saved_meal_id = smi.saved_meal_id
+            LEFT JOIN menu_items mi ON smi.item_id = mi.item_id
+            LEFT JOIN menu_item_nutrients min_t ON mi.item_id = min_t.item_id
+            LEFT JOIN nutrients n ON min_t.nutrient_id = n.nutrient_id
+            WHERE sm.user_id = %s
+            GROUP BY sm.saved_meal_id, sm.name, sm.description, sm.created_at, sm.updated_at
+            ORDER BY sm.updated_at DESC
+        '''
+        cursor.execute(query, (user_id,))
+        results = cursor.fetchall()
+        return jsonify({
+            'status': 'success',
+            'data': results,
+            'count': len(results)
+        }), 200
+    except Error as e:
+        current_app.logger.error(f'GET /nutrition/saved-meals/{user_id} error: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@nutrition.route('/saved-meals/<int:saved_meal_id>', methods=['DELETE'])
+def delete_saved_meal(saved_meal_id):
+    cursor = get_db().cursor(dictionary=True)
+
+    try:
+        cursor.execute('SELECT user_id FROM saved_meals WHERE saved_meal_id = %s', (saved_meal_id,))
+        meal = cursor.fetchone()
+        if not meal:
+            return jsonify({'status': 'error', 'message': f'Saved meal {saved_meal_id} not found'}), 404
+        cursor.execute('DELETE FROM saved_meals WHERE saved_meal_id = %s', (saved_meal_id,))
+        get_db().commit()
+        return jsonify({
+            'status': 'success',
+            'message': f'Saved meal {saved_meal_id} deleted'
+        }), 200
+    except Error as e:
+        current_app.logger.error(f'DELETE /nutrition/saved-meals/{saved_meal_id} error: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
