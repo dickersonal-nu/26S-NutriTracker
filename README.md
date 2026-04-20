@@ -39,20 +39,22 @@ NutriTracker stores data on food and tracks your daily intake with minimalistic 
 
 ## Features
 
-### For Students & Performers (Jordan)
-[WRITE: 3-4 bullet points — Andrew's features]
+### For Students & Performers (Jordan): *Andrew Dickerson*
+- Find dining halls based on location and current wait times
+- Browse menu items with nutritional filters (meal period, dietary labels)
+- Save 'go-to' meals for quick access between performances
 
-### For Athletes (Jason)
+### For Athletes (Jason): *Jasmine O'Brien*
 [WRITE: 3-4 bullet points — Jasmine's features]
 
-### For Data Analysts (Immanuel)
+### For Data Analysts (Immanuel): *Ryan Sinha*
 - Filter and visualize nutritional information by dining hall, type of student, and date range.
 - Compare average intake between students and student athletes
 - Create, update, and delete data export configurations
 - Detect outliers for student diets
 - Generate and queue summary reports
   
-### For System Admins (Laura)
+### For System Admins (Laura): *Joshua Barrera*
 [WRITE: 3-4 bullet points — Joshua's features]
 
 ---
@@ -122,7 +124,9 @@ docker compose up db -d
 ├── api/
 │   ├── backend/
 │   │   ├── analytics/          # Immanuel's routes — filter, trends, compare, outliers, reports, exports
-│   │   ├── nutrition/          # Jason's routes — daily intake, meal logging, goals, alerts
+│   │   ├── nutrition/          # Shared nutrition routes:
+│   │   │                        #  - (Jasmine/Jason): daily, logs, goals, alerts
+│   │   │                        #  - (Andrew/Jordan): dining-halls, menu-browse, wait-times, saved-meals
 │   │   ├── db_connection/      # MySQL connection helper
 │   │   └── rest_entry.py       # Flask app factory + blueprint registration
 │   ├── .env                    # Database credentials (not committed)
@@ -130,11 +134,15 @@ docker compose up db -d
 ├── app/
 │   └── src/
 │       ├── Home.py             # Landing page with persona selection
-│       ├── pages/              # Streamlit pages organized by persona (20_Athlete_*, 30_Analyst_*)
-│       └── modules/nav.py      # Sidebar navigation
+│       ├── pages/              # Streamlit pages organized by persona:
+│       │                        #  - 10-13: Performer (Andrew/Jordan)
+│       │                        #  - 20-23: Athlete (Jasmine/Jason)
+│       │                        #  - 30-33: Analyst (Ryan/Immanuel)
+│       │                        #  - 40+: Admin (Joshua/Laura)
+│       └── modules/nav.py      # Sidebar navigation (role-based)
 ├── database-files/
-│   ├── 01_nutritracker_ddl.sql             # Schema
-│   ├── 02_nutritracker_data.sql            # Seed data
+│   ├── 01_nutritracker_ddl.sql             # Schema (includes saved_meals tables)
+│   ├── 02_nutritracker_data.sql            # Seed data (menu items, saved meals, nutrition data)
 │   └── 03_nutritracker_mock_analytics.sql  # Mock data for reports, exports, system metrics, audit logs
 └── docker-compose.yaml
 ```
