@@ -45,7 +45,10 @@ NutriTracker stores data on food and tracks your daily intake with minimalistic 
 - Save 'go-to' meals for quick access between performances
 
 ### For Athletes (Jason): *Jasmine O'Brien*
-[WRITE: 3-4 bullet points — Jasmine's features]
+- Track daily nutrient intake and compare against personal nutrition goals
+- Log meals by browsing campus menu items and selecting servings
+- View weekly nutrition history with meal breakdowns by day and period
+- Receive alerts when nutrient intake falls below or exceeds goal thresholds
 
 ### For Data Analysts (Immanuel): *Ryan Sinha*
 - Filter and visualize nutritional information by dining hall, type of student, and date range.
