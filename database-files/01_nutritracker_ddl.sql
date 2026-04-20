@@ -245,6 +245,49 @@ CREATE TABLE alerts (
 
 
 -- =============================================================
+-- SAVED_MEALS
+-- User-created meal templates. Users can save favorite meal
+-- combinations for quick retrieval and tracking.
+-- =============================================================
+CREATE TABLE saved_meals (
+  saved_meal_id  INT           NOT NULL AUTO_INCREMENT,
+  user_id        INT           NOT NULL,
+  name           VARCHAR(150)  NOT NULL,
+  description    TEXT              NULL,
+  created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (saved_meal_id),
+  UNIQUE KEY uq_saved_meals_user_name (user_id, name),
+  CONSTRAINT fk_saved_meals_user
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+      ON DELETE CASCADE,
+  INDEX idx_saved_meals_user (user_id)
+) ENGINE=InnoDB;
+
+
+-- =============================================================
+-- SAVED_MEAL_ITEMS
+-- Line items within a saved meal. Links saved meals to menu
+-- items with optional serving size override.
+-- =============================================================
+CREATE TABLE saved_meal_items (
+  saved_item_id  INT           NOT NULL AUTO_INCREMENT,
+  saved_meal_id  INT           NOT NULL,
+  item_id        INT           NOT NULL,
+  servings       DECIMAL(5,2)  NOT NULL DEFAULT 1.00,
+
+  PRIMARY KEY (saved_item_id),
+  CONSTRAINT fk_smi_saved_meal
+    FOREIGN KEY (saved_meal_id) REFERENCES saved_meals(saved_meal_id)
+      ON DELETE CASCADE,
+  CONSTRAINT fk_smi_item
+    FOREIGN KEY (item_id) REFERENCES menu_items(item_id),
+  INDEX idx_smi_saved_meal (saved_meal_id)
+) ENGINE=InnoDB;
+
+
+-- =============================================================
 -- AUDIT_LOGS
 -- Immutable change log for every data mutation in the system.
 -- old_values / new_values store row snapshots as JSON.
