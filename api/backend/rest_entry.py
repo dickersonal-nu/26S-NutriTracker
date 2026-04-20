@@ -6,6 +6,7 @@ import logging
 from backend.db_connection import init_app as init_db
 from backend.nutrition.nutrition_routes import nutrition
 from backend.analytics.analytics_routes import analytics
+from backend.admin.admin_bp import admin_bp
 
 
 def create_app():
@@ -37,4 +38,5 @@ def create_app():
     app.logger.info("create_app(): registering blueprints")
     app.register_blueprint(nutrition, url_prefix="/nutrition")
     app.register_blueprint(analytics, url_prefix="/analytics")
+    app.register_blueprint(admin_bp,  url_prefix="/admin")
     return app
