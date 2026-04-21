@@ -160,7 +160,7 @@ docker compose up db -d
 
 ## Demo Video
 
-[PASTE VIDEO LINK HERE — must be publicly accessible, no permission required]
+[Demo Video](https://youtu.be/cqJZUdboGUM)
 
 ---
 
